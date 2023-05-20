@@ -50,6 +50,33 @@ async function run() {
       res.send(result);
     });
 
+    // Update One Toy
+    app.patch("/update/:id", async (req, res) => {
+      const toyID = req.params.id;
+      const toyInfo = req.body;
+      // console.log("Update Toy ID: ", toyID);
+      // console.log("Update Toy Info: ", toyInfo);
+
+      const filter = { _id: new ObjectId(toyID) };
+      // const options = { upsert: true };
+
+      const updateToy = {
+        $set: {
+          toy_name: toyInfo.toy_name,
+          photo_url: toyInfo.photo_url,
+          seller_name: toyInfo.seller_name,
+          seller_email: toyInfo.seller_email,
+          sub_category: toyInfo.sub_category,
+          rating: toyInfo.rating,
+          price: toyInfo.price,
+          quantity: toyInfo.quantity,
+          description: toyInfo.description
+        },
+      };
+      const result = await toyCollection.updateOne(filter, updateToy); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/updateOne/
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
