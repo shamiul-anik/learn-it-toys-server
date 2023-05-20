@@ -29,6 +29,17 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const toyCollection = client.db("toyDB").collection("toys");
+
+    // Insert One Toy
+    app.post("/add-a-toy", async (req, res) => {
+      const toy = req.body;
+      // console.log("New Toy: ", toy);
+      const result = await toyCollection.insertOne(toy); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/insertOne/
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
