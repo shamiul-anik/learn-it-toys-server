@@ -32,6 +32,16 @@ async function run() {
 
     const toyCollection = client.db("toyDB").collection("toys");
 
+    // View Single Toy
+    app.get("/toy/:id", async (req, res) => {
+      const toyID = req.params.id;
+      // console.log("Single Toy ID to Load: ", toyID);
+      const query = { _id: new ObjectId(toyID) };
+      const result = await toyCollection.findOne(query); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/findOne/
+      // console.log(result);
+      res.send(result);
+    });
+
     // Insert One Toy
     app.post("/add-a-toy", async (req, res) => {
       const toy = req.body;
