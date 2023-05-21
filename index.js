@@ -38,14 +38,14 @@ async function run() {
     app.get("/toys", async (req, res) => {
       const limit = parseInt(req?.query.limit) || 20;
       const sort = req.query?.sort;
-      const search = req.query?.search;
+      // const search = req.query?.search;
       // console.log(search);
-      let query = {};
-      if(search) {
-        query = { toy_name: search };
-      }
+      // let query = {};
+      // if(search) {
+      //   query = { toy_name: search };
+      // }
       const cursor = toyCollection
-        .find(query)
+        .find()
         .sort({ price: sort })
         .limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
       const result = await cursor.toArray();
