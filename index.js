@@ -36,8 +36,10 @@ async function run() {
     // View All Toys
     app.get("/toys", async (req, res) => {
       const limit = parseInt(req?.query.limit) || 20;
-      const cursor = toyCollection.find().limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
+      const sort = req.query?.sort;
+      const cursor = toyCollection.find().sort({ price: sort }).limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
       const result = await cursor.toArray();
+      // console.log(result);
       res.send(result);
     });
 
@@ -45,14 +47,18 @@ async function run() {
     app.get("/my-toys", async (req, res) => {
       const limit = parseInt(req.query?.limit) || 20;
       const email = req.query?.email;
-      console.log(email);
-      console.log(limit);
+      const sort = req.query?.sort;
+      // console.log(email);
+      // console.log(limit);
+      console.log(sort);
+      console.log({ price: sort });
       let query = {};
       if (email) {
         query = { seller_email: email };
       }
-      console.log(query);
-      const result = await toyCollection.find(query).limit(limit).toArray();
+      // console.log(query);
+      const result = await toyCollection.find(query).sort({price: sort}).limit(limit).toArray();
+      // console.log(result);
       res.send(result);
     });
 
