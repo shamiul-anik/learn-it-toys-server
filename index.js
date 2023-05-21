@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 
@@ -38,12 +38,14 @@ async function run() {
     app.get("/toys", async (req, res) => {
       const limit = parseInt(req?.query.limit) || 20;
       const sort = req.query?.sort;
-      // const search = req.query?.search;
+      const search = req.query?.search;
       // console.log(search);
-      // const query = { $text: { $search: search } };
-      
+      let query = {};
+      if(search) {
+        query = { toy_name: search };
+      }
       const cursor = toyCollection
-        .find()
+        .find(query)
         .sort({ price: sort })
         .limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
       const result = await cursor.toArray();
