@@ -31,13 +31,21 @@ async function run() {
     await client.connect();
 
     const toyCollection = client.db("toyDB").collection("toys");
-    // db.movies.createIndex({ title: "text" });
+    // client.db("toyDB").toyCollection.createIndex("toy_name");
+    // client.db("toyDB").createIndex({ toy_name: "text" });
 
     // View All Toys
     app.get("/toys", async (req, res) => {
       const limit = parseInt(req?.query.limit) || 20;
       const sort = req.query?.sort;
-      const cursor = toyCollection.find().sort({ price: sort }).limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
+      // const search = req.query?.search;
+      // console.log(search);
+      // const query = { $text: { $search: search } };
+      
+      const cursor = toyCollection
+        .find()
+        .sort({ price: sort })
+        .limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
       const result = await cursor.toArray();
       // console.log(result);
       res.send(result);
@@ -50,14 +58,18 @@ async function run() {
       const sort = req.query?.sort;
       // console.log(email);
       // console.log(limit);
-      console.log(sort);
-      console.log({ price: sort });
+      // console.log(sort);
+      // console.log({ price: sort });
       let query = {};
       if (email) {
         query = { seller_email: email };
       }
       // console.log(query);
-      const result = await toyCollection.find(query).sort({price: sort}).limit(limit).toArray();
+      const result = await toyCollection
+        .find(query)
+        .sort({ price: sort })
+        .limit(limit)
+        .toArray();
       // console.log(result);
       res.send(result);
     });
@@ -104,6 +116,16 @@ async function run() {
         },
       };
       const result = await toyCollection.updateOne(filter, updateToy); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/updateOne/
+      res.send(result);
+    });
+
+    // Delete Toy Data
+    app.delete("/delete/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await toyCollection.deleteOne(query);
+      // console.log(result);
       res.send(result);
     });
 
