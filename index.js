@@ -33,8 +33,9 @@ async function run() {
     const toyCollection = client.db("toyDB").collection("toys");
 
     // View All Toys
-    app.get("/all-toys", async (req, res) => {
-      const cursor = toyCollection.find(); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
+    app.get("/toys", async (req, res) => {
+      const limit = parseInt(req?.query.limit) || 20;
+      const cursor = toyCollection.find().limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
       const result = await cursor.toArray();
       res.send(result);
     });
