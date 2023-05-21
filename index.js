@@ -31,12 +31,28 @@ async function run() {
     await client.connect();
 
     const toyCollection = client.db("toyDB").collection("toys");
+    // db.movies.createIndex({ title: "text" });
 
     // View All Toys
     app.get("/toys", async (req, res) => {
       const limit = parseInt(req?.query.limit) || 20;
       const cursor = toyCollection.find().limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // Get My Toys
+    app.get("/my-toys", async (req, res) => {
+      const limit = parseInt(req.query?.limit) || 20;
+      const email = req.query?.email;
+      console.log(email);
+      console.log(limit);
+      let query = {};
+      if (email) {
+        query = { seller_email: email };
+      }
+      console.log(query);
+      const result = await toyCollection.find(query).limit(limit).toArray();
       res.send(result);
     });
 
