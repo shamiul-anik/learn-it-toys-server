@@ -9,6 +9,16 @@ const port = process.env.PORT || 5000;
 
 // middleware
 app.use(cors());
+// const corsConfig = {
+//   origin: "*",
+//   credentials: true,
+//   methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+// };
+// app.use(cors(corsConfig))
+// app.options("", cors(corsConfig))
+
+
+
 app.use(express.json());
 
 // console.log("User: ", process.env.DB_USER_NAME);
@@ -28,26 +38,55 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const toyCollection = client.db("toyDB").collection("toys");
-    // client.db("toyDB").toyCollection.createIndex("toy_name");
-    // client.db("toyDB").createIndex({ toy_name: "text" });
+    
+    const indexKeys = { toy_name: 1, seller_name: 1 }; // Replace field1 and field2 with your actual field names
+    const indexOptions = { name: "toySellerName" }; // Replace index_name with the desired index name
+    const indexResult = await toyCollection.createIndex(indexKeys, indexOptions);
+    // console.log(indexResult);
 
     // View All Toys
     app.get("/toys", async (req, res) => {
       const limit = parseInt(req?.query.limit) || 20;
       const sort = req.query?.sort;
-      // const search = req.query?.search;
-      // console.log(search);
-      // let query = {};
-      // if(search) {
-      //   query = { toy_name: search };
-      // }
+      const search = req.query?.search;
+      console.log(search);
+      let query = {};
+      if (search) {
+        // query = { toy_name: { $regex: search, $options: "i" } };
+        query = {
+          $or: [
+            { toy_name: { $regex: search, $options: "i" } },
+            { seller_name: { $regex: search, $options: "i" } },
+          ],
+        };
+      }
       const cursor = toyCollection
-        .find()
+        .find(query)
         .sort({ price: sort })
         .limit(limit); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/find/
+      const result = await cursor.toArray();
+      // console.log(result);
+      res.send(result);
+    });
+
+    // View Toys by Sub-category
+    app.get("/sub-categories", async (req, res) => {
+      const tabIndex = parseInt(req.query?.tabIndex);
+      const subCategoryName = (tabIndex == 1) ? "Language Toys" : (tabIndex == 2) ? "Math Toys" : "Science Toys";
+      // console.log("tabIndex", tabIndex);
+      // console.log("subCategoryName", subCategoryName);
+
+      // if(tabIndex == 0) {
+      //   const subCategoryName = "Language Toys";
+      // }
+      let query = {};
+      if (tabIndex) {
+        query = { sub_category: subCategoryName };
+      }
+      const cursor = toyCollection.find(query);
       const result = await cursor.toArray();
       // console.log(result);
       res.send(result);
@@ -58,6 +97,9 @@ async function run() {
       const limit = parseInt(req.query?.limit) || 20;
       const email = req.query?.email;
       const sort = req.query?.sort;
+      const search = req.query?.search;
+      console.log(search);
+
       // console.log(email);
       // console.log(limit);
       // console.log(sort);
@@ -65,6 +107,12 @@ async function run() {
       let query = {};
       if (email) {
         query = { seller_email: email };
+      }
+      if (search) {
+        query = {
+          seller_email: email,
+          toy_name: { $regex: search, $options: "i" },
+        };
       }
       // console.log(query);
       const result = await toyCollection
@@ -105,18 +153,23 @@ async function run() {
       // const options = { upsert: true };
 
       const updateToy = {
-        $set: {
-          toy_name: toyInfo.toy_name,
-          photo_url: toyInfo.photo_url,
-          seller_name: toyInfo.seller_name,
-          seller_email: toyInfo.seller_email,
-          sub_category: toyInfo.sub_category,
-          rating: toyInfo.rating,
-          price: toyInfo.price,
-          quantity: toyInfo.quantity,
-          description: toyInfo.description,
-        },
+        $set: toyInfo,
       };
+
+      // const updateToy = {
+      //   $set: {
+      //     toy_name: toyInfo.toy_name,
+      //     photo_url: toyInfo.photo_url,
+      //     seller_name: toyInfo.seller_name,
+      //     seller_email: toyInfo.seller_email,
+      //     sub_category: toyInfo.sub_category,
+      //     rating: toyInfo.rating,
+      //     price: toyInfo.price,
+      //     quantity: toyInfo.quantity,
+      //     description: toyInfo.description,
+      //   },
+      // };
+
       const result = await toyCollection.updateOne(filter, updateToy); // Documentation: https://www.mongodb.com/docs/drivers/node/current/usage-examples/updateOne/
       res.send(result);
     });
