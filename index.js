@@ -8,14 +8,14 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // middleware
-app.use(cors());
-// const corsConfig = {
-//   origin: "*",
-//   credentials: true,
-//   methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-// };
-// app.use(cors(corsConfig))
-// app.options("", cors(corsConfig))
+const corsOptions = {
+  origin: "*",
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
+// app.use(cors());
+app.use(express.json());
 
 
 
@@ -44,7 +44,7 @@ async function run() {
     
     const indexKeys = { toy_name: 1, seller_name: 1 }; // Replace field1 and field2 with your actual field names
     const indexOptions = { name: "toySellerName" }; // Replace index_name with the desired index name
-    const indexResult = await toyCollection.createIndex(indexKeys, indexOptions);
+    // const indexResult = await toyCollection.createIndex(indexKeys, indexOptions);
     // console.log(indexResult);
 
     // View All Toys
@@ -185,7 +185,7 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You are successfully connected to MongoDB!"
     );
